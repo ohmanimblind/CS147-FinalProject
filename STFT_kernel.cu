@@ -46,7 +46,7 @@ __global__ void stftkernel(const float* d_signal, const float* d_hann, Complex *
 	int t = threadIdx.x;
 
 	extern __shared__ Complex s_data[];
-
+	
 	int data_id = fft_index * N + t;
 
 	//make partitions and apply hann

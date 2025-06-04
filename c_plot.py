@@ -8,6 +8,7 @@ fs = 48000           # sample rate of your WAV file (replace if different)
 
 # 2) Load the raw binary file (float32, row‐major: frame0 bins[0..N-1], frame1 bins[N..2N-1], etc.)
 spec = np.fromfile("spectrogram.bin", dtype=np.float32)
+print("raw.bin length =",spec.size," expected =",num_frames * N)
 spec = spec.reshape((num_frames, N))
 
 # 3) Keep only the first N//2 bins (positive frequencies 0…fs/2)
