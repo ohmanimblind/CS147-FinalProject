@@ -121,7 +121,9 @@ def main():
     wav_path = sys.argv[1]
     fs, signal = read_mono_float(wav_path)
     print(f"Loaded '{wav_path}', sample rate = {fs} Hz, length = {signal.shape[0]} samples")
-
+    
+    for i in range(10):
+      print(f"Python mon_signal: {signal[i]}")
     # STFT parameters
     N = 1024   # must be power of 2
     H = 512    # hop size (50% overlap)
@@ -129,8 +131,11 @@ def main():
     # Compute STFT
     stft_complex = stft_numpy(signal, N=N, H=H)
     print(f"Computed STFT: num_frames = {stft_complex.shape[0]}, N = {N}")
-
-    # Compute magnitude squared (power)
+   
+    for i in range(8):
+       real = stft_complex[0,i].real
+       imag = stft_complex[0,i].imag
+       print(f"Py FFT frame0 bin[{i}]= {real:.6f} + {imag:.6f}i") 
     spec_power = magnitude_squared(stft_complex)
 	
     for i in range(5):

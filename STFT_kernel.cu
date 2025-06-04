@@ -40,7 +40,7 @@ void make_spectro(const Complex* d_stft, float* d_spectro, int num_frames, int N
 	spectrogram<<<grid, BLOCK_SIZE >>>(d_stft,d_spectro, total_Bins);
 } 
 
-__global__ void stftkernel(const float* d_signal, const float* d_hann, Complex *data,int totalFrames, int N,int H, int num_fft){
+/*__global__ void stftkernel(const float* d_signal, const float* d_hann, Complex *data,int totalFrames, int N,int H, int num_fft){
 
 	int fft_index = blockIdx.x;
 	int t = threadIdx.x;
@@ -92,13 +92,89 @@ __global__ void stftkernel(const float* d_signal, const float* d_hann, Complex *
 	}
 	//data[data_id] = s_data[t];
 	data[fft_index * N + t] = s_data[t];
+}*/
+
+
+static __device__ __forceinline__ int bit_reverse(int x, int logN) {
+    // Reverse the lowest logN bits of x
+    int y = 0;
+    for (int i = 0; i < logN; ++i) {
+        y = (y << 1) | ( (x >> i) & 1 );
+    }
+    return y;
 }
+extern "C"
+__global__ void stft_kernel_fixed(
+    const float* d_signal,
+    const float* d_hann,
+    Complex*      d_stft_out,
+    int           totalSamples,
+    int           N,
+    int           H,
+    int           num_frames
+) {
+    int frame = blockIdx.x;
+    int t     = threadIdx.x;
+    if (frame >= num_frames || t >= N) return;
+
+    extern __shared__ Complex s_data[];
+
+    // 1) load & window
+    int start = frame * H;
+    int idx   = start + t;
+    float windowed = 0.0f;
+    if (idx < totalSamples) {
+        windowed = d_signal[idx] * d_hann[t];
+    }
+    s_data[t].real = windowed;
+    s_data[t].imag = 0.0f;
+    __syncthreads();
+
+    // 2) BIT‐REVERSAL reorder in‐place
+    int logN = __ffs(N) - 1;  // log2(N)
+    int rev  = bit_reverse(t, logN);
+    if (rev > t) {
+        // swap s_data[t] and s_data[rev]
+        Complex tmp = s_data[t];
+        s_data[t] = s_data[rev];
+        s_data[rev] = tmp;
+    }
+    __syncthreads();
+
+    // 3) Iterative Radix‐2 FFT (standard butterflies)
+    for (int s = 1; s <= logN; ++s) {
+        int m     = 1 << s;
+        int halfM = m >> 1;
+        int k     = t & (halfM - 1);
+
+        float angle = -2.0f * M_PI * k / float(m);
+        Complex w = { cosf(angle), sinf(angle) };
+
+        int groupStart = (t >> s) * m;
+        int index1 = groupStart + k;
+        int index2 = index1 + halfM;
+
+        Complex u = s_data[index1];
+        Complex v = s_data[index2];
+        Complex v_tw = complex_mult(v, w);
+
+        __syncthreads();
+        s_data[index1] = complex_add(u, v_tw);
+        s_data[index2] = complex_sub(u, v_tw);
+        __syncthreads();
+    }
+
+    // 4) Output result to global memory
+    d_stft_out[frame * N + t] = s_data[t];
+}
+
+
 
 void stft(const float* d_signal, const float* d_hann, Complex *data,int totalFrames,  int N,int H, int num_fft){
 
 	int shared_bytes = N * sizeof(Complex);
 	dim3 grid(num_fft);
 	dim3 block(N);	
-	stftkernel<<<grid, block, shared_bytes>>>(d_signal, d_hann,data, totalFrames, N, H, num_fft);	
+	stft_kernel_fixed<<<grid, block, shared_bytes>>>(d_signal, d_hann,data, totalFrames, N, H, num_fft);	
 }
 
