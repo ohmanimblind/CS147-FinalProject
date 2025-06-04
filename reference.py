@@ -132,7 +132,10 @@ def main():
 
     # Compute magnitude squared (power)
     spec_power = magnitude_squared(stft_complex)
-
+	
+    for i in range(5):
+       print("Python spec:" )
+       print (spec_power[i])
     # Plot as heatmap
     plot_spectrogram(spec_power, fs, N)
 

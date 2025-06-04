@@ -28,6 +28,8 @@ int main(){
         printf("Failed to load file\n");
         return 1;
     }
+	uint32_t fs = wav.sampleRate;
+	printf("Sample rate: %u Hz\n",fs);
 	//audio file is read into a buffer, where each buffer[i] is an int16_t
     //int16_t* buffer = malloc(wav.totalPCMFrameCount * wav.channels * sizeof(int16_t));
     int16_t* buffer = new int16_t[wav.totalPCMFrameCount * wav.channels /** sizeof(int16_t)*/];
@@ -47,7 +49,7 @@ int main(){
 }
 	
 	printf("First values of h_mono[]: ");
-	for(unsigned int i = 0 ; i < 100; ++i){
+	for(unsigned int i = 0 ; i < 10; ++i){
 		printf("Value at h_mono[%d]",i);		
 		printf(": %f\n",h_mono[i]);	
 	}
@@ -127,7 +129,7 @@ int main(){
 	cudaDeviceSynchronize();	
 	cudaMemcpy(spec_output, d_spec, (size_t)num_frames * N * sizeof(float), cudaMemcpyDeviceToHost);
 
-		for(int j = 0; j < 10000 ;++j){
+		for(int j = 0; j < 10 ;++j){
 		printf("spec value: %.8f\n",spec_output[j]);	
 	}
 
@@ -135,6 +137,7 @@ int main(){
 	FILE* f = fopen("spectrogram.bin","wb");
 	if(f){
 		fwrite(spec_output,sizeof(float),(size_t)num_frames*N,f);
+		fclose(f);
 	}else{
 		printf("uh oh");	
 	}
@@ -145,6 +148,9 @@ int main(){
 	cudaFree(d_hann);
 	cudaFree(d_stft);
 
+	cudaFree(d_stftin);
+	cudaFree(d_spec);
+	delete[] spec_output;
 	delete[] h_hann;
 	delete[] h_mono;
 	delete[] buffer;
