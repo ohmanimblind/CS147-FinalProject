@@ -45,12 +45,19 @@ int main() {
 	for(unsigned int i = 0 ; i < 100; ++i){
 		print_complex("value:",input[i]);
 	}
+	//testing 
+	//
+	//
+	Complex* test_signal = malloc(wav.totalPCMFrameCount * sizeof(Complex));
+	for (int i = 0 ; i < 1024 ; ++i){
+		test_signal[i] = input[i];
+	}
 	
-	fast_fourier_transform(input, wav.totalPCMFrameCount);
+	fast_fourier_transform(test_signal, wav.totalPCMFrameCount);
 		
 	printf("First values of input[]: ");
 	for(unsigned int i = 0 ; i < 100; ++i){
-		print_complex("value:",input[i]);
+		print_complex("value:",test_signal[i]);
 	}
 	free(buffer);
     drwav_uninit(&wav);
