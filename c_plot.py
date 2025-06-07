@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 # 1) Parameters—match these to your C code
 num_frames = 374     # replace with the exact num_frames printed by your C program
-N = 1024             # FFT length used in C
+N = 1024            # FFT length used in C
 fs = 48000           # sample rate of your WAV file (replace if different)
 
 # 2) Load the raw binary file (float32, row‐major: frame0 bins[0..N-1], frame1 bins[N..2N-1], etc.)

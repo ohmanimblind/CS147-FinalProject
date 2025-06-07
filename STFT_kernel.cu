@@ -34,7 +34,7 @@
 } 
 
 void make_spectro(const cufftComplex* d_stft, float* d_spectro, int num_frames, int N){
-	int total_Bins = num_frames * (N/2);
+	int total_Bins = num_frames * (N);
 	dim3 block_size(BLOCK_SIZE);
 	dim3 grid = (total_Bins + BLOCK_SIZE - 1) / BLOCK_SIZE;
 	spectrogram<<<grid, BLOCK_SIZE >>>(d_stft,d_spectro, total_Bins);
