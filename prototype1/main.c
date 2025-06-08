@@ -49,7 +49,7 @@ int main() {
 	//
 	//
 	Complex* test_signal = malloc(wav.totalPCMFrameCount * sizeof(Complex));
-	for (int i = 0 ; i < 1024 ; ++i){
+	for (int i = 0 ; i < wav.totalPCMFrameCount ; ++i){
 		test_signal[i] = input[i];
 	}
 	

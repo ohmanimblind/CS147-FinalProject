@@ -1,20 +1,20 @@
 #include <cuda.h>
-#include <cufft.h>
 #include <cstdio>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "support.h"
 #include "STFT_kernel.cu"
 
 
 #define DR_WAV_IMPLEMENTATION
 #include "dr_wav.h"
-/*void print_complex(const char* label, Complex c){
+void print_complex(const char* label, Complex c){
     printf("%s: %.5f + %.5fi\n",label,c.real,c.imag);
-  }*/
-int main(){
-	
+  }
+int main(int argc, char *argv[]){
+	Timer timer;	
 	/*PART ONE: AUDIO PROCESSING */
 	/*----------------------------
 	Preprocessing Audio using the dr_wav single file header. 
@@ -24,11 +24,9 @@ int main(){
 		- process the audio through channel magic and produce a 'mono' array
 
 	*/
-	//Usage: startTime(&timer)
-	//stopTipe(&timer); print(elapsed(timer))
-	//Timer timer; //For data collection 
+	char* wav_path = argv[1];
 	drwav wav;
-    if (!drwav_init_file(&wav, "/scratch/apadi089/audio/fold1/101415-3-0-3.wav", NULL)) {
+    if (!drwav_init_file(&wav, wav_path, NULL)) {
         printf("Failed to load file\n");
         return 1;
     }
@@ -41,7 +39,7 @@ int main(){
 	
     printf("Read %llu frames from WAV file\n", wav.totalPCMFrameCount);
 
-
+   startTime(&timer);	
 	//Audio nonsense I dont understand: Has to do with channels
 	float* h_mono = new float[wav.totalPCMFrameCount /* sizeof(float)*/];
 	for(uint64_t i =0 ; i < wav.totalPCMFrameCount ; ++i){
@@ -50,13 +48,13 @@ int main(){
 		}else{
 		h_mono[i] = (buffer[i*2]+buffer[i*2+1])/(2.0f * 32768.0f);
 		}	
-}
-	
-	printf("First values of h_mono[]: ");
+    }	
+	stopTime(&timer);
+/*	printf("First values of h_mono[]: ");
 	for(unsigned int i = 0 ; i < 10; ++i){
 		printf("Value at h_mono[%d]",i);		
 		printf(": %f\n",h_mono[i]);	
-	}
+	}*/
 
 	/*PART TWO: SETTING STFT KERNEL PARAMETERS */
 	/*----------------------------
@@ -68,7 +66,7 @@ int main(){
 	------------------------------
 	*/
 
-
+	startTime(&timer);
 	//STFT SECTION:
 	const int N = 1024; //window size
     const int H = 512;	//hop size
@@ -87,7 +85,7 @@ int main(){
 	//Allocations:
 	float* d_input;
 	float* d_hann;
-	float* d_windowed;
+	Complex* d_stft;
 
 	cudaMalloc((void**)&d_input, totalFrames * sizeof(float));
 	cudaMemcpy(d_input, h_mono, totalFrames * sizeof(float), cudaMemcpyHostToDevice);
@@ -95,37 +93,21 @@ int main(){
 	cudaMalloc((void**) &d_hann, N* sizeof(float));    
 	cudaMemcpy(d_hann, h_hann, N * sizeof(float), cudaMemcpyHostToDevice);
 
-	cudaMalloc((void**)&d_windowed, (size_t)num_frames * N * sizeof(float));
+	cudaMalloc((void**)&d_stft, (size_t)num_frames * N * sizeof(Complex));
 	
-	stft(d_input, d_hann, d_windowed, totalFrames, N, H, num_frames);
+	stft(d_input, d_hann, d_stft, totalFrames, N, H, num_frames);
 	
 	cudaDeviceSynchronize();
  	
-/*	float* windowed_result = (float*)malloc((size_t)num_frames * N * sizeof(float)); */
-	/*cudaMemcpy(windowed_result, d_windowed, (size_t)num_frames * N * sizeof(float), cudaMemcpyDeviceToHost); */
+	//Complex* stft_result = (Complex*)malloc((size_t)num_frames * N * sizeof(Complex));
+	//cudaMemcpy(stft_result, d_stft, (size_t)num_frames * N * sizeof(Complex), cudaMemcpyDeviceToHost);
 	
 	/*for(int j = 0; j < 10 ;++j){
-		print_complex("stft value:",windowed_result[j]);	
+		print_complex("stft value:",stft_result[j]);	
 	}*/
-	cufftComplex* d_complexIn;
-	cufftComplex* d_complexOut;
-	cudaMalloc((void**)&d_complexIn, (size_t)num_frames*N*sizeof(cufftComplex));
-	cudaMalloc((void**)&d_complexOut, (size_t)num_frames*N*sizeof(cufftComplex));
 	
-	call_complexify(d_windowed, d_complexIn, N * num_frames);
-	cudaDeviceSynchronize();	
-
-
-
-	/*PART TWO.5: cuFFT Implementation*/
-		
-	cufftHandle plan;
-	cufftPlan1d(&plan, N, CUFFT_C2C, num_frames);
-	cufftExecC2C(plan,d_complexIn, d_complexOut ,CUFFT_FORWARD);
-	cudaDeviceSynchronize();
-	cufftDestroy(plan);
-
-
+	stopTime(&timer);
+	printf("Time for stft: %.5d",elapsedTime(timer));
 
 	/*PART THREE: SPECTROGRAM */
 	/*----------------------------
@@ -135,26 +117,29 @@ int main(){
 	CNN for classification. Instead of matrix mult., we simply square the real and imaginary parts of our
 	fourier coeffecients, and add them
 	------------------------------
+	NOTE: possible improvement here by keeping data on GPU before returning	
 	*/
-	
+
 	float* spec_output = new float[(size_t)num_frames * N ];
 	float* d_spec;
 	//Complex *d_stftin;
 	
+	//cudaMalloc((void**)&d_stftin, (size_t)num_frames * N * sizeof(Complex));
+	//cudaMemcpy(d_stftin, stft_result, (size_t)num_frames* N * sizeof(Complex), cudaMemcpyHostToDevice);
 
 	cudaMalloc((void**)&d_spec, (size_t)num_frames * N * sizeof(float));
 		
 
-	make_spectro(d_complexOut, d_spec ,num_frames, N );
+	make_spectro(d_stft, d_spec ,num_frames, N );
 	cudaDeviceSynchronize();	
 	cudaMemcpy(spec_output, d_spec, (size_t)num_frames * N * sizeof(float), cudaMemcpyDeviceToHost);
 
-		for(int j = 0; j < 10 ;++j){
+	/*	for(int j = 0; j < 10 ;++j){
 		printf("spec value: %.8f\n",spec_output[j]);	
-	}
+	}*/
 
 	//TESTETST TEST OUTPUT
-	FILE* f = fopen("spectrogram.bin","wb");
+	FILE* f = fopen("spectrogram_ct.bin","wb");
 	if(f){
 		fwrite(spec_output,sizeof(float),(size_t)num_frames*N,f);
 		fclose(f);
@@ -162,12 +147,11 @@ int main(){
 		printf("uh oh");	
 	}
 	
-	printf("totalFrames: %d",num_frames);
-	cudaFree(d_windowed);
+	printf("numFrames: %d",num_frames);
 	cudaFree(d_input);
 	cudaFree(d_hann);
-	cudaFree(d_complexIn);
-	cudaFree(d_complexOut);
+	cudaFree(d_stft);
+
 	cudaFree(d_spec);
 	delete[] spec_output;
 	delete[] h_hann;
