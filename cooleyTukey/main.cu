@@ -31,13 +31,13 @@ int main(int argc, char *argv[]){
         return 1;
     }
 	uint32_t fs = wav.sampleRate;
-	printf("Sample rate: %u Hz\n",fs);
+   printf("Sample rate: %u Hz\n",fs);
 	//audio file is read into a buffer, where each buffer[i] is an int16_t
     //int16_t* buffer = malloc(wav.totalPCMFrameCount * wav.channels * sizeof(int16_t));
     int16_t* buffer = new int16_t[wav.totalPCMFrameCount * wav.channels /** sizeof(int16_t)*/];
 	drwav_read_pcm_frames_s16(&wav, wav.totalPCMFrameCount, buffer);
 	
-    printf("Read %llu frames from WAV file\n", wav.totalPCMFrameCount);
+    //printf("Read %llu frames from WAV file\n", wav.totalPCMFrameCount);
 
    startTime(&timer);	
 	//Audio nonsense I dont understand: Has to do with channels
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]){
 	}*/
 	
 	stopTime(&timer);
-	printf("Time for stft: %.5d",elapsedTime(timer));
+	//printf("Time for stft: %.5d\n",elapsedTime(timer));
 
 	/*PART THREE: SPECTROGRAM */
 	/*----------------------------
@@ -147,7 +147,7 @@ int main(int argc, char *argv[]){
 		printf("uh oh");	
 	}
 	
-	printf("numFrames: %d",num_frames);
+	printf("numFrames: %d\n",num_frames);
 	cudaFree(d_input);
 	cudaFree(d_hann);
 	cudaFree(d_stft);

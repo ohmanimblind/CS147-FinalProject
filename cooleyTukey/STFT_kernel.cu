@@ -105,7 +105,7 @@ __global__ void stft_kernel_fixed(
         Complex v = s_data[index2]; //odd term
         Complex v_tw = complex_mult(v, w);
 
-        __syncthreads();
+       // __syncthreads();
         s_data[index1] = complex_add(u, v_tw);
         s_data[index2] = complex_sub(u, v_tw);
         __syncthreads();

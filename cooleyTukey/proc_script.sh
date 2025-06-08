@@ -5,10 +5,10 @@ BIN=./main
 start=$SECONDS
 
 for FOLD in fold{3..10}; do
-	OUTDIR=/scratch/apadi089/audio/${FOLD}proc
+	OUTDIR=/scratch/apadi089/audio/${FOLD}cf
 	mkdir -p "$OUTDIR"
 
-#	echo "Proccessing $FOLD"
+	#echo "Proccessing $FOLD"
 	
 	for WAV in /scratch/apadi089/audio/"$FOLD"/*.wav; do
 		BASENAME=$(basename "$WAV" .wav)
@@ -18,8 +18,8 @@ for FOLD in fold{3..10}; do
 
 
 
-		mv spectrogram.bin "$OUTDIR/${BASENAME}.bin"
-#		echo " moving $BASENAME.wav -> $OUTDIR/${BASENAME}.bin "
+		mv spectrogram_ct.bin "$OUTDIR/${BASENAME}.bin"
+	#	echo " moving $BASENAME.wav -> $OUTDIR/${BASENAME}.bin "
 	done
 done
 
