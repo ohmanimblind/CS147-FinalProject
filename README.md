@@ -56,7 +56,10 @@ fast_fourier_transform(Complex* input, int N){
   }
 ```
 And here is the corresponding output:
+
 ![serial](reference/serial_fourier.png)
+
+
 The issue however, is that this is a sequential, recursive algorithm. And this course isn't called "sequential programming". So I had to scrap this, and learn about the **2-Radix Butterfly Algorithm**. (Which hurt alot).
 ## 2-Radix Butterfly Cooley Tukey
 
@@ -91,6 +94,7 @@ Due to my human error, I also opted ot use my original main.cu that took care of
 To use cuFFT, one must simply specify a 'plan', with the length, along with the number of frames (number of FFT's to perform). It then handles all bit reversal and indexing issues no matter the input. It executes all frames in parralel, having the desired functionality for our high demand computations. 
 
 In both implementations, the idea is the same. a window size of 1024, with a block size of 256. Each thread handles two butterfly pairs at a time, so each handles 2 elements each. We allocate a block per frame, so our grid is usually of frames/block size (edge cases).
+
 
 ## Performance and Comparison
 
@@ -133,7 +137,38 @@ My attemped implementation of cooley-Tukey did compile faster, however, with a M
 
 As one can see, while my implementation did run faster, the produced spectrograms are extremley different. The fast fourir algorithm is extremley complex, especially the 2-Radix version, so there are cases I didn't consider, things cuFFT does. However, I would like to note the extreme similarity between the two sample2.png's. While one is obvisouly cleaner, the "essense" of the information being captured is still present (although completley lost in sample1.png). 
 
+## Process Summary
+
+In the cuFFT implementation, the process goes as following:
+```
+1: use dr_wav to load audio into buffer
+
+2: normalize (audio nonsense)
+
+3: N = 1024, Hop Size = 512
+
+4: make hanning window to cut function
+
+5: Move signal into memory, slice up
+
+6: transform to complex values
+
+7: Perform STFT using cuFFT, with size N and num_frames times
+
+8: make spectrogram using simple kernel
+
+9: move data back
+
+repeat above for all samples
+
+```
+
+
 ## What I learned and Where to Improve
+
+As said in the beggining of course, more lines =/= better code. As compared to the simple sequential implementation, to perform these computations in parallel took lots of problem solving. And, it all came down to indexing. Indexing the butterfly's to handle the right elements during the right phase was the trickiest part to understand and grasp. 
+
+I also saw of course how memory movement can be a big limitation. I could've improved this implementation further by having all samples on the device. I could have also found a way to only declare the hanning window once, as that could be a bottle neck as it has to be made for every sample (honestly propbably the biggest possible improvement). 
 
 ## Compile Commands
 To compile the cooley-tukey version
