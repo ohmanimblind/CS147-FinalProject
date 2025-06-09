@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+BIN=./main
+
+start=$SECONDS
+
+for FOLD in fold{3..10}; do
+	OUTDIR=/scratch/apadi089/audio/${FOLD}cf
+	mkdir -p "$OUTDIR"
+
+	#echo "Proccessing $FOLD"
+	
+	for WAV in /scratch/apadi089/audio/"$FOLD"/*.wav; do
+		BASENAME=$(basename "$WAV" .wav)
+
+
+		"$BIN" "$WAV"
+
+
+
+		mv spectrogram_ct.bin "$OUTDIR/${BASENAME}.bin"
+	#	echo " moving $BASENAME.wav -> $OUTDIR/${BASENAME}.bin "
+	done
+done
+
+duration=$((SECONDS - start))
+echo "Duration in seconds $duration"
+
+echo "done"
