@@ -33,13 +33,13 @@ int main(int argc, char** argv){
         return 1;
     }
 	uint32_t fs = wav.sampleRate;
-//	printf("Sample rate: %u Hz\n",fs);
+	printf("Sample rate: %u Hz\n",fs);
 	//audio file is read into a buffer, where each buffer[i] is an int16_t
     //int16_t* buffer = malloc(wav.totalPCMFrameCount * wav.channels * sizeof(int16_t));
     int16_t* buffer = new int16_t[wav.totalPCMFrameCount * wav.channels /** sizeof(int16_t)*/];
 	drwav_read_pcm_frames_s16(&wav, wav.totalPCMFrameCount, buffer);
 	
-  //  printf("Read %llu frames from WAV file\n", wav.totalPCMFrameCount);
+    printf("Read %llu frames from WAV file\n", wav.totalPCMFrameCount);
 
 
 	//Audio nonsense I dont understand: Has to do with channels
@@ -53,14 +53,13 @@ int main(int argc, char** argv){
 		}	
 	}
 	stopTime(&timer);
-//	printf("Time to Proccess to Data sample: %.5f", elapsedTime(timer));
+	printf("Time to Proccess to Data sample: %.5f\n", elapsedTime(timer));
 	
-	/*FOR TESTING
 	printf("First values of h_mono[]: ");
 	for(unsigned int i = 0 ; i < 10; ++i){
 		printf("Value at h_mono[%d]",i);		
 		printf(": %f\n",h_mono[i]);	
-	}*/
+	}
 
 	/*PART TWO: HANNING WINDOW  */
 	/*----------------------------
@@ -137,7 +136,7 @@ int main(int argc, char** argv){
 
 
 	stopTime(&timer);
-//	printf("STFT Section Time: %.8f",elapsedTime(timer));
+	printf("STFT Section Time: %.8f",elapsedTime(timer));
 
 	/*PART THREE: SPECTROGRAM */
 	/*----------------------------
@@ -161,13 +160,12 @@ int main(int argc, char** argv){
 	cudaDeviceSynchronize();	
 	cudaMemcpy(spec_output, d_spec, (size_t)num_frames * N * sizeof(float), cudaMemcpyDeviceToHost);
 
-	//FOR TESTING
-	/*	for(int j = 0; j < 10 ;++j){
+		for(int j = 0; j < 10 ;++j){
 		printf("spec value: %.8f\n",spec_output[j]);	
-	} */
+	} 
 
 	stopTime(&timer);
-//	printf("Spectrogram Elapsed Time: %.5f", elapsedTime(timer));
+    printf("Spectrogram Elapsed Time: %.5f\n", elapsedTime(timer));
 
 	//TESTETST TEST OUTPUT
 	FILE* f = fopen("spectrogram.bin","wb");
@@ -178,7 +176,7 @@ int main(int argc, char** argv){
 		printf("uh oh");	
 	}
 	
-	//printf("num_frames: %d",num_frames);
+	printf("num_frames: %d\n",num_frames);
 
 	cudaFree(d_windowed);
 	cudaFree(d_input);
