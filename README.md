@@ -79,6 +79,7 @@ Both implementations, (my attempted cooley-Tuket and cuFFT), were used on 7 fold
 ![Spectrogram of Jack Hammer](cuFFT/spectrogram_103074-7-0-0-jack.png)
 
 My attemped implementation of cooley-Tukey did compile faster, however, with a MAJOR caviat. The graphs will speak for themselves
+
 #### cooleyTukey/sample1.png
 ![spectrogram-sample-ct](cooleyTukey/fail.png)
 #### cuFFT/sample1.png
@@ -87,6 +88,8 @@ My attemped implementation of cooley-Tukey did compile faster, however, with a M
 ![spec-ct-2](cooleyTukey/eh_2.png)
 #### cuFFT/sample2.png
 ![spec-cufft-2](cuFFT/success_2.png)
+
+As one can see, while my implementation did run faster, the produced spectrograms are extremley different. The fast fourir algorithm is extremley complex, especially the 2-Radix version, so there are cases I didn't consider, things cuFFT does. However, I would like to note the extreme similarity between the two sample2.png's. While one is obvisouly cleaner, the "essense" of the information being captured is still present (although completley lost in sample1.png). 
 
 ## What I learned and Where to Improve
 
