@@ -78,6 +78,15 @@ Both implementations, (my attempted cooley-Tuket and cuFFT), were used on 7 fold
 #### jackhammer
 ![Spectrogram of Jack Hammer](cuFFT/spectrogram_103074-7-0-0-jack.png)
 
+My attemped implementation of cooley-Tukey did compile faster, however, with a MAJOR caviat. The graphs will speak for themselves
+#### cooleyTukey/sample1.png
+![spectrogram-sample-ct](cooleyTukey/fail.png)
+#### cuFFT/sample1.png
+![spectrogram-sample-cufft](cuFFT/spectrogram_hz.png)
+#### cooleyTukey/sample2.png
+![spec-ct-2](cooleyTukey/eh_2.png)
+#### cuFFT/sample2.png
+![spec-cufft-2](cuFFT/success_2.png)
 
 ## What I learned and Where to Improve
 
