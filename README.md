@@ -70,10 +70,10 @@ Both implementations, (my attempted cooley-Tuket and cuFFT), were used on 7 fold
 
 ### cuFFT: 
 
-[Spectrogram of Dog Bark](cuFFT/spectrogram_101415-3-0-3-dog.png)
-[Spectrogram of Dog Bark - 2](cuFFT/spectrogram_101415-3-0-8.png)
-[Spectrogram of Gun Shot](cuFFT/spectrogram_102305-6-0-0-gun.png)
-[Spectrogram of Jack Hammer](cuFFT/spectrogram_103074-7-0-0-jack.png)
+![Spectrogram of Dog Bark](cuFFT/spectrogram_101415-3-0-3-dog.png)
+![Spectrogram of Dog Bark - 2](cuFFT/spectrogram_101415-3-0-8.png)
+![Spectrogram of Gun Shot](cuFFT/spectrogram_102305-6-0-0-gun.png)
+![Spectrogram of Jack Hammer](cuFFT/spectrogram_103074-7-0-0-jack.png)
 
 
 ## What I learned and Where to Improve
