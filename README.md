@@ -69,10 +69,13 @@ To use cuFFT, one must simply specify a 'plan', with the length, along with the 
 Both implementations, (my attempted cooley-Tuket and cuFFT), were used on 7 folds of the urbansound8k data set consisting of ~4 second long audio clips. The entire data set has around 16,000 samples, so without the exact number, each processed about 11,200 audio samples. The output where raw binary samples, as the NN classifer simply needs the values, and not a literal spectrogam to "look" at. 
 
 ### cuFFT: 
-
+#### dog bark
 ![Spectrogram of Dog Bark](cuFFT/spectrogram_101415-3-0-3-dog.png)
+#### dog bark 2
 ![Spectrogram of Dog Bark - 2](cuFFT/spectrogram_101415-3-0-8-dog.png)
+#### gun shot
 ![Spectrogram of Gun Shot](cuFFT/spectrogram_102305-6-0-0-gun.png)
+#### jackhammer
 ![Spectrogram of Jack Hammer](cuFFT/spectrogram_103074-7-0-0-jack.png)
 
 
