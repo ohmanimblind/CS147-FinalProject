@@ -82,6 +82,12 @@ The above diagram is an example on why exactly we need to account for bit revers
 
 As we continue splitting in and even/odd fashion, in this simple example, the value at 0001 is actually given by loc. 1000 and so forth. 
 
+Without bit switching, this was the output spectrogram: 
+
+![bad](no_bit_switch.png)
+
+There are values, but they aren't in the correct locations.
+
 ## Indexing in the algorithm
 
 Since we are constantly splitting the polynomial, we will have logN iteration throigh a for loop of matching butterfly pairs. at each step, we need to know s:= our current stage, m:= our current problem size, and m_half:= which is the stride in a sense. Below is a worked out example of a very simple problem size. 
