@@ -56,23 +56,59 @@ fast_fourier_transform(Complex* input, int N){
   }
 ```
 And here is the corresponding output:
-
+![serial](reference/serial_fourier.png)
 The issue however, is that this is a sequential, recursive algorithm. And this course isn't called "sequential programming". So I had to scrap this, and learn about the **2-Radix Butterfly Algorithm**. (Which hurt alot).
 ## 2-Radix Butterfly Cooley Tukey
 
 This implementation of the DFT allows us to essentially perform our fourier transforms in parralel, by handling smaller and smaller problems. 
 
 The intuition comes from the even/odd splitting of a signal to get the following identities:
-![intution]
+![intution](reference/intuition.PNG)
+What this tells us that these indices, always a constant stride apart based on our iteration, are equal aside from the distinction of +/-. The W term is refered to as the "twiddle factor". What's fantastic about this is that we can also reuse computations for these terms.
+
+Now, there are caveats, as it isn't so simple. Since we continously split the problem into smaller problems, we are NOT doing so recursivley. So we must use bit-magic and clever indexing to understanding where our final values should end up. 
+
+![block](reference/blockDiagram.PNG)
+
+The above diagram is an example on why exactly we need to account for bit reversals and placements. Every time we split our problem into a smaller one, we must account for its original indexing to make sure our coeffeceinets are in the right location at the very end. For example, X[0] = X[E_0] + W^0_0 X[Odd_0), but inside our smaller N/2 DFT, the indices are also switched. Below is another example
+
+![indices](reference/bitreversal.PNG)
+
+As we continue splitting in and even/odd fashion, in this simple example, the value at 0001 is actually given by loc. 1000 and so forth. 
+
+## Indexing in the algorithm
+
+Since we are constantly splitting the polynomial, we will have logN iteration throigh a for loop of matching butterfly pairs. at each step, we need to know s:= our current stage, m:= our current problem size, and m_half:= which is the stride in a sense. Below is a worked out example of a very simple problem size. 
+
+![phase1](reference/phasepart1.PNG)
+![phase2](reference/phasepart2.PNG)
+
+We start from the very bottom, and as we iterate, extend back up to a full problem size. Our stride in stage 1 was of size 2/2=1. Our stride in stage 2 was 4/2=2. Which is why our pairs were [0,1] and [0,2] respectivley. So in each problem stage, each block handles one frame, and each thread in a block is responsible for 2 butterfly pairs at a time. 
 
 ## cuFFT Implementation
 Due to my human error, I also opted ot use my original main.cu that took care of the spectrogram and windowing, and alter it slighlty to instead use the cuFFT library. cuFFT essentially performs the same task, but with other optimizations to guratnee high performance and covering all edge cases. 
 
 To use cuFFT, one must simply specify a 'plan', with the length, along with the number of frames (number of FFT's to perform). It then handles all bit reversal and indexing issues no matter the input. It executes all frames in parralel, having the desired functionality for our high demand computations. 
 
+In both implementations, the idea is the same. a window size of 1024, with a block size of 256. Each thread handles two butterfly pairs at a time, so each handles 2 elements each. We allocate a block per frame, so our grid is usually of frames/block size (edge cases).
+
 ## Performance and Comparison
 
 Both implementations, (my attempted cooley-Tuket and cuFFT), were used on 7 folds of the urbansound8k data set consisting of ~4 second long audio clips. The entire data set has around 16,000 samples, so without the exact number, each processed about 11,200 audio samples. The output where raw binary samples, as the NN classifer simply needs the values, and not a literal spectrogam to "look" at. 
+
+### cooleyTukey Runtime
+![cooley](reference/cooleyTukeyruntime.png)
+
+This implementation took around 29 minutes to process 11,200 samples.
+
+### cuFFT Runtime
+
+![cufft](reference/cuFFTRuntime.png)
+
+This implementation, suprisingly, took 31 minutes, about a minute longer on the same samples. 
+Below is logging of each step, where this is the typical perforamnce one one sample (as sampling rate and size time can vary):
+
+![output_cufft](reference/cuFFToutput.png)
 
 ### cuFFT: 
 #### dog bark
