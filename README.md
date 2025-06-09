@@ -58,6 +58,12 @@ fast_fourier_transform(Complex* input, int N){
 And here is the corresponding output:
 
 The issue however, is that this is a sequential, recursive algorithm. And this course isn't called "sequential programming". So I had to scrap this, and learn about the **2-Radix Butterfly Algorithm**. (Which hurt alot).
+## 2-Radix Butterfly Cooley Tukey
+
+This implementation of the DFT allows us to essentially perform our fourier transforms in parralel, by handling smaller and smaller problems. 
+
+The intuition comes from the even/odd splitting of a signal to get the following identities:
+![intution]
 
 ## cuFFT Implementation
 Due to my human error, I also opted ot use my original main.cu that took care of the spectrogram and windowing, and alter it slighlty to instead use the cuFFT library. cuFFT essentially performs the same task, but with other optimizations to guratnee high performance and covering all edge cases. 
