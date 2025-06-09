@@ -18,6 +18,9 @@ So the main steps are:
 - Fast Fourier transform on num_frames
 - Generate Spectrogram through magnitude squared
 
+This type of preproccesing is crucial in the Audio Classifer pipeline. Below is a [final paper](Math_147_Project___Applications_of_Fourier_Analysis_in_Artificial_Intelligence.pdf) I wrote regarding Fourier Analysis in Machine Learning, which was the inspiration to complete this project
+
+
 ## Fast Fourier Transform: 
 
 The fast fourier is a wonderful algorithm, as the inutuion behind it is simple(although everything else about it is not). For any signal X[n], we can seperate it into even and odd parts. It thene uses the idea of symetry for even an odd degree polynomials to compute a corresponding point at a given time, halving the amount of computation needed. Below is the serial imlementation I made for testing:
@@ -162,7 +165,9 @@ In the cuFFT implementation, the process goes as following:
 repeat above for all samples
 
 ```
+![windowexample](window_example.png)
 
+The above is also a short clarification on what I mean by windowing.(helps isolate)
 
 ## What I learned and Where to Improve
 
