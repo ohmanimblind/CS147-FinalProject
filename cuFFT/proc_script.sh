@@ -4,7 +4,7 @@ BIN=./main
 
 start=$SECONDS
 
-for FOLD in fold{3..10}; do
+for FOLD in fold{1..2}; do
 	OUTDIR=/scratch/apadi089/audio/${FOLD}proc
 	mkdir -p "$OUTDIR"
 

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 num_frames = 343   # always match with num_frames
 N = 1024            # FFT length used in C
-fs = 44100           # sample rate
+fs = 44100          # sample rate
 
 spec = np.fromfile("spectrogram.bin", dtype=np.float32)
 print("raw.bin length =",spec.size," expected =",num_frames * N)
